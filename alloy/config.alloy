@@ -1,0 +1,40 @@
+
+// Discover Docker containers
+rediscovery = discovery.docker "docker" {
+  host = "unix:///var/run/docker.sock"
+  refresh_interval = "5s"
+}
+
+// Optional relabel: add container name label without leading slash
+rel = discovery.relabel "docker" {
+  targets = rediscovery.targets
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex = "/(.*)"
+    target_label = "container"
+  }
+}
+
+// Read logs from all containers
+loki.source.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+  targets = rediscovery.targets
+  relabel_rules = rel.rules
+  labels = { job = "docker" }
+  forward_to = [loki.process.docker.receiver]
+  refresh_interval = "5s"
+}
+
+// Process pipeline: add static labels, keep JSON if present
+loki.process "docker" {
+  stage.json {}
+  stage.static_labels { values = { environment = "production" } }
+  forward_to = [loki.write.default.receiver]
+}
+
+// Push to Loki
+loki.write "default" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}

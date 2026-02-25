@@ -1,0 +1,77 @@
+
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: Infra Alerts
+    folder: Observabilidade
+    interval: 60s
+    rules:
+      - uid: host_high_cpu
+        title: Host CPU acima de 85%
+        condition: A
+        data:
+          - refId: A
+            datasourceUid: Prometheus
+            queryType: timeSeriesQuery
+            relativeTimeRange:
+              from: 300
+              to: 0
+            model:
+              expr: 100 - (avg by(instance)(irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+              legendFormat: instance
+              intervalMs: 1000
+              maxDataPoints: 43200
+        noDataState: NoData
+        execErrState: Error
+        for: 5m
+        annotations:
+          summary: CPU alta no host
+        labels:
+          severity: critical
+
+      - uid: host_high_mem
+        title: Host Memória acima de 80%
+        condition: A
+        data:
+          - refId: A
+            datasourceUid: Prometheus
+            queryType: timeSeriesQuery
+            relativeTimeRange:
+              from: 300
+              to: 0
+            model:
+              expr: (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100
+              legendFormat: instance
+              intervalMs: 1000
+              maxDataPoints: 43200
+        noDataState: NoData
+        execErrState: Error
+        for: 5m
+        annotations:
+          summary: Memória alta no host
+        labels:
+          severity: warning
+
+      - uid: container_restarts
+        title: Containers reiniciando
+        condition: A
+        data:
+          - refId: A
+            datasourceUid: Prometheus
+            queryType: timeSeriesQuery
+            relativeTimeRange:
+              from: 900
+              to: 0
+            model:
+              expr: changes(container_start_time_seconds[10m]) > 0
+              legendFormat: container
+              intervalMs: 1000
+              maxDataPoints: 43200
+        noDataState: NoData
+        execErrState: Error
+        for: 1m
+        annotations:
+          summary: Algum container reiniciou nos últimos 10 minutos
+        labels:
+          severity: info
