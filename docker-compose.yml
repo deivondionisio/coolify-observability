@@ -30,7 +30,7 @@ services:
       - "12345:12345"
     command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
     volumes:
-      - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - ./alloy:/etc/alloy:ro
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on: [loki]
     restart: unless-stopped
@@ -94,3 +94,4 @@ services:
       - /dev/disk/:/dev/disk:ro
     restart: unless-stopped
     networks: [monitoring]
+ 

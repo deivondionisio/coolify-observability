@@ -1,9 +1,6 @@
 
 apiVersion: 1
 
-# Remove datasources not listed here (optional)
-# prune: true
-
 datasources:
   - name: Prometheus
     type: prometheus
