@@ -62,8 +62,9 @@ services:
       - --storage.tsdb.path=/prometheus
       - --web.enable-lifecycle
     volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus:/etc/prometheus:ro
       - prometheus-data:/prometheus
+
     depends_on: [node-exporter, cadvisor]
     restart: unless-stopped
     networks: [monitoring]
